@@ -1,0 +1,44 @@
+# ---- Python ----
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pdb
+
+# Virtual environments
+venv/
+.venv/
+venv1/
+.venv1/
+
+# ---- PyCharm / JetBrains ----
+.idea/
+
+# ---- Environment / Config ----
+.env
+*.env
+
+# ---- Uploads ----
+uploads/*
+
+# Keep an empty placeholder if needed
+!uploads/.gitkeep
+
+# ---- OS-specific ----
+# Windows
+Thumbs.db
+Desktop.ini
+
+# macOS
+.DS_Store
+
+# ---- Logs ----
+*.log
+
+# ---- Compiled / build ----
+build/
+dist/
+*.egg-info/
+
+# ---- PDF or generated documents ----
+*.pdf

@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BFC Access Review</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        :root {
+            --scor-teal: #1a8a8f;
+            --scor-teal-dark: #156b6f;
+            --scor-teal-light: #2ba7ad;
+            --scor-blue: #005f73;
+            --success: #10b981;
+            --danger: #ef4444;
+            --light-bg: #f0f9fa;
+            --card-bg: #ffffff;
+            --border: #d1e8ea;
+            --text-primary: #0f172a;
+            --text-secondary: #4a5568;
+            --shadow: 0 2px 4px 0 rgb(0 0 0 / 0.08);
+            --shadow-lg: 0 10px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(90deg, hsla(197, 77%, 38%, 1) 0%, hsla(234, 70%, 24%, 1) 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+        }
+
+        .container-fluid {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        .scor-logo {
+            height: 60px;
+            width: auto;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 2rem;
+            animation: fadeInDown 0.6s ease;
+            padding: 1.5rem 0;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            letter-spacing: -0.5px;
+        }
+
+        .header p {
+            font-size: 1rem;
+            opacity: 0.95;
+        }
+
+        /* Card Styling */
+        .card {
+            background: var(--card-bg);
+            border: none;
+            border-radius: 8px;
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        /* Upload Section */
+        #upload-section {
+            animation: fadeIn 0.6s ease;
+        }
+
+        .upload-area {
+            border: 2px dashed var(--border);
+            border-radius: 8px;
+            padding: 3rem 2rem;
+            text-align: center;
+            background: var(--light-bg);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .upload-area:hover {
+            border-color: var(--scor-teal);
+            background: #e6f7f8;
+        }
+
+        .upload-area.dragover {
+            border-color: var(--scor-teal);
+            background: #e6f7f8;
+            transform: scale(1.01);
+        }
+
+        .upload-icon {
+            font-size: 3.5rem;
+            color: var(--scor-teal);
+            margin-bottom: 1rem;
+        }
+
+        .btn-upload {
+            background: var(--scor-teal);
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+            cursor: pointer;
+        }
+
+        .btn-upload:hover {
+            background: var(--scor-teal-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(26, 138, 143, 0.3);
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            animation: fadeIn 0.6s ease 0.2s backwards;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.25rem;
+            box-shadow: var(--shadow);
+            border-left: 4px solid var(--scor-teal);
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--scor-teal);
+        }
+
+        /* Filters Section */
+        .filters-section {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow);
+        }
+
+        .filters-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--scor-teal);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .filter-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .filter-select {
+            padding: 0.75rem;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.95rem;
+            background: white;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .filter-select:hover {
+            border-color: var(--scor-teal-light);
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--scor-teal);
+            box-shadow: 0 0 0 3px rgba(26, 138, 143, 0.1);
+        }
+
+        .btn-clear-filters {
+            padding: 0.75rem 1.5rem;
+            background: #f1f5f9;
+            border: none;
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1.5rem;
+        }
+
+        .btn-clear-filters:hover {
+            background: #e2e8f0;
+        }
+
+        /* Data Table */
+        .data-section {
+            animation: fadeIn 0.6s ease 0.4s backwards;
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .table-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--scor-teal);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .results-count {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            font-weight: normal;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            overflow-y: auto;
+            max-height: 700px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 0.95rem;
+        }
+
+        .data-table thead {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: var(--scor-teal);
+        }
+
+        .data-table th {
+            padding: 1rem 1.25rem;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: white;
+            border-bottom: 2px solid var(--scor-teal-dark);
+            white-space: nowrap;
+        }
+
+        .data-table td {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--border);
+            background: white;
+            color: var(--text-primary);
+        }
+
+        .data-table tbody tr:hover td {
+            background: var(--light-bg);
+        }
+
+        .data-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Bulk Selection */
+        .bulk-actions {
+            background: var(--light-bg);
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .bulk-actions-label {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        .bulk-btn {
+            padding: 0.6rem 1.25rem;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .bulk-btn-keep {
+            background: var(--success);
+            color: white;
+        }
+
+        .bulk-btn-keep:hover {
+            background: #059669;
+            transform: translateY(-1px);
+        }
+
+        .bulk-btn-remove {
+            background: var(--danger);
+            color: white;
+        }
+
+        .bulk-btn-remove:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+        }
+
+        .bulk-btn-select-all {
+            background: var(--scor-teal);
+            color: white;
+        }
+
+        .bulk-btn-select-all:hover {
+            background: var(--scor-teal-dark);
+        }
+
+        .bulk-btn-deselect {
+            background: #6b7280;
+            color: white;
+        }
+
+        .bulk-btn-deselect:hover {
+            background: #4b5563;
+        }
+
+        .checkbox-cell {
+            width: 40px;
+            text-align: center;
+        }
+
+        input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--scor-teal);
+        }
+
+        /* Export Dropdown */
+        .export-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .export-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            margin-top: 0.5rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: var(--shadow-lg);
+            min-width: 220px;
+            z-index: 100;
+            border: 1px solid var(--border);
+        }
+
+        .export-menu.show {
+            display: block;
+        }
+
+        .export-menu-item {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .export-menu-item:last-child {
+            border-bottom: none;
+        }
+
+        .export-menu-item:hover {
+            background: var(--light-bg);
+            color: var(--scor-teal);
+        }
+
+        .export-menu-item i {
+            width: 20px;
+        }
+
+        /* Toggle Switch */
+        .decision-toggle {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .toggle-btn {
+            padding: 0.6rem 1.25rem;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-size: 0.85rem;
+            white-space: nowrap;
+        }
+
+        .toggle-btn:hover {
+            border-color: var(--scor-teal);
+            transform: translateY(-1px);
+        }
+
+        .toggle-btn.keep {
+            border-color: var(--success);
+            background: var(--success);
+            color: white;
+        }
+
+        .toggle-btn.remove {
+            border-color: var(--danger);
+            background: var(--danger);
+            color: white;
+        }
+
+        /* Action Buttons */
+        .btn-action {
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            border: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary-action {
+            background: var(--scor-teal);
+            color: white;
+        }
+
+        .btn-primary-action:hover {
+            background: var(--scor-teal-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(26, 138, 143, 0.3);
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Hide sections initially */
+        #filters-section, #data-section {
+            display: none;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            color: var(--border);
+            margin-bottom: 1rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 { font-size: 2rem; }
+            .stats-bar { grid-template-columns: 1fr; }
+            .filters-grid { grid-template-columns: 1fr; }
+            .data-table { font-size: 0.85rem; }
+            .data-table th, .data-table td { padding: 0.75rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- Header -->
+        <div class="header">
+    <img src="/static/getsitelogo.png" alt="SCOR Logo" class="scor-logo">
+
+    <h1>BFC Access Review</h1>
+
+</div>
+
+        <!-- Upload Section -->
+        <div id="upload-section">
+            <div class="card">
+                <div class="card-body">
+                    <div class="upload-area" id="upload-area">
+                        <i class="bi bi-cloud-upload upload-icon"></i>
+                        <h4>Upload Excel File</h4>
+                        <p class="text-muted">Drag and drop your .xlsx file here or click to browse</p>
+                        <input type="file" id="file-input" accept=".xlsx" style="display: none;">
+                        <button class="btn-upload" onclick="document.getElementById('file-input').click()">
+                            <i class="bi bi-folder2-open me-2"></i>Choose File
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Bar -->
+        <div class="stats-bar" id="stats-bar" style="display: none;">
+            <div class="stat-card">
+                <div class="stat-label">Total Users (Filtered)</div>
+                <div class="stat-value" id="stat-filtered">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total Users (All)</div>
+                <div class="stat-value" id="stat-total">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Keep Access (Filtered)</div>
+                <div class="stat-value" id="stat-keep" style="color: var(--success);">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Remove Access (Filtered)</div>
+                <div class="stat-value" id="stat-remove" style="color: var(--danger);">0</div>
+            </div>
+        </div>
+
+        <!-- Filters Section -->
+        <div id="filters-section" style="display: none;">
+            <div class="card filters-section">
+                <div class="filters-title">
+                    <i class="bi bi-funnel-fill"></i>
+                    Filter User Access
+                </div>
+                <div class="filters-grid">
+                    <div class="filter-group">
+                        <label class="filter-label">Data Entry Filter Owner</label>
+                        <select class="filter-select" id="filter-owner">
+                            <option value="">All Owners</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Department</label>
+                        <select class="filter-select" id="filter-department">
+                            <option value="">All Departments</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Country</label>
+                        <select class="filter-select" id="filter-country">
+                            <option value="">All Countries</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Active BFC</label>
+                        <select class="filter-select" id="filter-active">
+                            <option value="">All Status</option>
+                            <option value="Yes">Active</option>
+                            <option value="No">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn-clear-filters" onclick="clearFilters()">
+                    <i class="bi bi-x-circle me-2"></i>Clear All Filters
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div id="data-section">
+            <div class="card data-section">
+                <div class="card-body">
+                    <div class="table-header">
+                        <div>
+                            <div class="table-title">
+                                <i class="bi bi-table"></i>
+                                User Access Details
+                                <span class="results-count" id="results-count">(0 results)</span>
+                            </div>
+                        </div>
+                        <div class="export-dropdown">
+                            <button class="btn-action btn-primary-action" onclick="toggleExportMenu()">
+                                <i class="bi bi-download"></i>Export Results
+                                <i class="bi bi-chevron-down"></i>
+                            </button>
+                            <div class="export-menu" id="export-menu">
+                                <div class="export-menu-item" onclick="exportData('all')">
+                                    <i class="bi bi-file-earmark-spreadsheet"></i>
+                                    Export All Users
+                                </div>
+                                <div class="export-menu-item" onclick="exportData('filtered')">
+                                    <i class="bi bi-filter"></i>
+                                    Export Filtered Users
+                                </div>
+                                <div class="export-menu-item" onclick="exportData('keep')">
+                                    <i class="bi bi-check-circle"></i>
+                                    Export Keep Only
+                                </div>
+                                <div class="export-menu-item" onclick="exportData('remove')">
+                                    <i class="bi bi-x-circle"></i>
+                                    Export Remove Only
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bulk Actions -->
+                    <div class="bulk-actions" id="bulk-actions" style="display: none;">
+                        <span class="bulk-actions-label">
+                            <i class="bi bi-check-square me-2"></i>
+                            <span id="selected-count">0</span> selected
+                        </span>
+                        <button class="bulk-btn bulk-btn-keep" onclick="bulkUpdate('keep')">
+                            <i class="bi bi-check-circle"></i>
+                            Keep Selected
+                        </button>
+                        <button class="bulk-btn bulk-btn-remove" onclick="bulkUpdate('remove')">
+                            <i class="bi bi-x-circle"></i>
+                            Remove Selected
+                        </button>
+                        <button class="bulk-btn bulk-btn-select-all" onclick="selectAll()">
+                            <i class="bi bi-check-all"></i>
+                            Select All
+                        </button>
+                        <button class="bulk-btn bulk-btn-deselect" onclick="deselectAll()">
+                            <i class="bi bi-square"></i>
+                            Deselect All
+                        </button>
+                    </div>
+
+                    <div id="loading-indicator" style="display: none; text-align: center; padding: 3rem; color: var(--text-secondary);">
+                        <div class="spinner" style="margin: 0 auto 1rem; width: 40px; height: 40px; border-width: 4px; border-color: var(--scor-teal); border-top-color: transparent;"></div>
+                        <p>Loading user data...</p>
+                    </div>
+                    <div class="table-container" id="table-container-wrapper">
+                        <table class="data-table" id="data-table">
+                            <thead id="table-head"></thead>
+                            <tbody id="table-body"></tbody>
+                        </table>
+                    </div>
+                    <div id="empty-state" class="empty-state" style="display: none;">
+                        <i class="bi bi-inbox"></i>
+                        <h4>No results found</h4>
+                        <p>Try adjusting your filters</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let sessionId = null;
+        let allRows = [];
+        let filteredRows = [];
+        let selectedIndices = new Set();
+        let currentFilters = {
+            owner: '',
+            department: '',
+            country: '',
+            active: ''
+        };
+
+        // Close export menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.export-dropdown')) {
+                document.getElementById('export-menu').classList.remove('show');
+            }
+        });
+
+        function toggleExportMenu() {
+            event.stopPropagation();
+            document.getElementById('export-menu').classList.toggle('show');
+        }
+
+        // File Upload Handling
+        const uploadArea = document.getElementById('upload-area');
+        const fileInput = document.getElementById('file-input');
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        async function handleFile(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const uploadButton = document.querySelector('.btn-upload');
+            uploadButton.innerHTML = '<span class="spinner"></span> Uploading...';
+            uploadButton.disabled = true;
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    sessionId = data.session_id;
+                    document.getElementById('upload-section').style.display = 'none';
+                    document.getElementById('filters-section').style.display = 'block';
+                    document.getElementById('data-section').style.display = 'block';
+                    document.getElementById('stats-bar').style.display = 'grid';
+
+                    // Load all data
+                    await loadAllData();
+                    updateAllStats();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                alert('Error uploading file: ' + error.message);
+            } finally {
+                uploadButton.innerHTML = '<i class="bi bi-folder2-open me-2"></i>Choose File';
+                uploadButton.disabled = false;
+            }
+        }
+
+        async function loadAllData() {
+            try {
+                const response = await fetch(`/get_all_rows/${sessionId}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    allRows = data.rows;
+                    filteredRows = [...allRows];
+
+                    // Populate filter dropdowns
+                    populateFilters(data.rows);
+
+                    // Display table
+                    displayTable(filteredRows, data.columns);
+                }
+            } catch (error) {
+                console.error('Error loading data:', error);
+                alert('Error loading data: ' + error.message);
+            }
+        }
+
+        function populateFilters(rows) {
+            // Get unique values for each filter
+            const owners = [...new Set(rows.map(r => r['Data entry filter owner']).filter(v => v))].sort();
+            const departments = [...new Set(rows.map(r => r['Department']).filter(v => v))].sort();
+            const countries = [...new Set(rows.map(r => r['Country']).filter(v => v))].sort();
+
+            // Populate owner filter
+            const ownerSelect = document.getElementById('filter-owner');
+            ownerSelect.innerHTML = '<option value="">All Owners</option>' +
+                owners.map(o => `<option value="${o}">${o}</option>`).join('');
+
+            // Populate department filter
+            const deptSelect = document.getElementById('filter-department');
+            deptSelect.innerHTML = '<option value="">All Departments</option>' +
+                departments.map(d => `<option value="${d}">${d}</option>`).join('');
+
+            // Populate country filter
+            const countrySelect = document.getElementById('filter-country');
+            countrySelect.innerHTML = '<option value="">All Countries</option>' +
+                countries.map(c => `<option value="${c}">${c}</option>`).join('');
+
+            // Add change listeners
+            ownerSelect.addEventListener('change', applyFilters);
+            deptSelect.addEventListener('change', applyFilters);
+            countrySelect.addEventListener('change', applyFilters);
+            document.getElementById('filter-active').addEventListener('change', applyFilters);
+        }
+
+        function applyFilters() {
+            currentFilters = {
+                owner: document.getElementById('filter-owner').value,
+                department: document.getElementById('filter-department').value,
+                country: document.getElementById('filter-country').value,
+                active: document.getElementById('filter-active').value
+            };
+
+            filteredRows = allRows.filter(row => {
+                if (currentFilters.owner && row['Data entry filter owner'] !== currentFilters.owner) return false;
+                if (currentFilters.department && row['Department'] !== currentFilters.department) return false;
+                if (currentFilters.country && row['Country'] !== currentFilters.country) return false;
+                if (currentFilters.active && row['Active BFC'] !== currentFilters.active) return false;
+                return true;
+            });
+
+            selectedIndices.clear();
+            displayTable(filteredRows, Object.keys(allRows[0] || {}));
+            updateFilteredStats();
+            document.getElementById('results-count').textContent = `(${filteredRows.length} results)`;
+        }
+
+        function clearFilters() {
+            document.getElementById('filter-owner').value = '';
+            document.getElementById('filter-department').value = '';
+            document.getElementById('filter-country').value = '';
+            document.getElementById('filter-active').value = '';
+            applyFilters();
+        }
+
+        function displayTable(rows, columns) {
+            const thead = document.getElementById('table-head');
+            const tbody = document.getElementById('table-body');
+            const emptyState = document.getElementById('empty-state');
+            const tableWrapper = document.getElementById('table-container-wrapper');
+
+            if (rows.length === 0) {
+                tableWrapper.style.display = 'none';
+                emptyState.style.display = 'block';
+                document.getElementById('bulk-actions').style.display = 'none';
+                return;
+            }
+
+            tableWrapper.style.display = 'block';
+            emptyState.style.display = 'none';
+            document.getElementById('bulk-actions').style.display = 'flex';
+
+            // Display all important columns
+            const displayCols = [
+                'Code',
+                'User Name',
+                'Data entry access',
+                'BFC reporting unit',
+                'Entity Name',
+                'Data entry filter owner',
+                'Functional Profile',
+                'Active BFC',
+                'Active AD',
+                'Access Right'
+            ].filter(col => columns.includes(col));
+
+            thead.innerHTML = `
+                <tr>
+                    <th class="checkbox-cell">
+                        <input type="checkbox" id="select-all-header" onchange="toggleSelectAll()" />
+                    </th>
+                    ${displayCols.map(col => `<th>${col}</th>`).join('')}
+                    <th>Decision</th>
+                </tr>
+            `;
+
+            tbody.innerHTML = rows.map(row => {
+                const cells = displayCols.map(col => {
+                    const value = row[col];
+                    return `<td>${value !== undefined && value !== null ? value : '-'}</td>`;
+                }).join('');
+
+                const isChecked = selectedIndices.has(row._index);
+
+                return `
+                    <tr>
+                        <td class="checkbox-cell">
+                            <input type="checkbox"
+                                   class="row-checkbox"
+                                   data-index="${row._index}"
+                                   ${isChecked ? 'checked' : ''}
+                                   onchange="toggleRowSelection(${row._index})" />
+                        </td>
+                        ${cells}
+                        <td>
+                            <div class="decision-toggle">
+                                <button class="toggle-btn ${row._decision === 'keep' ? 'keep' : ''}"
+                                        onclick="updateDecision(${row._index}, 'keep')"
+                                        id="keep-${row._index}">
+                                    <i class="bi bi-check-circle me-1"></i>Keep
+                                </button>
+                                <button class="toggle-btn ${row._decision === 'remove' ? 'remove' : ''}"
+                                        onclick="updateDecision(${row._index}, 'remove')"
+                                        id="remove-${row._index}">
+                                    <i class="bi bi-x-circle me-1"></i>Remove
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            updateSelectionCount();
+        }
+
+        function toggleRowSelection(index) {
+            if (selectedIndices.has(index)) {
+                selectedIndices.delete(index);
+            } else {
+                selectedIndices.add(index);
+            }
+            updateSelectionCount();
+            updateSelectAllCheckbox();
+        }
+
+        function toggleSelectAll() {
+            const isChecked = document.getElementById('select-all-header').checked;
+            if (isChecked) {
+                filteredRows.forEach(row => selectedIndices.add(row._index));
+            } else {
+                filteredRows.forEach(row => selectedIndices.delete(row._index));
+            }
+
+            // Update all checkboxes
+            document.querySelectorAll('.row-checkbox').forEach(cb => {
+                cb.checked = isChecked;
+            });
+
+            updateSelectionCount();
+        }
+
+        function selectAll() {
+            filteredRows.forEach(row => selectedIndices.add(row._index));
+            document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = true);
+            document.getElementById('select-all-header').checked = true;
+            updateSelectionCount();
+        }
+
+        function deselectAll() {
+            selectedIndices.clear();
+            document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = false);
+            document.getElementById('select-all-header').checked = false;
+            updateSelectionCount();
+        }
+
+        function updateSelectAllCheckbox() {
+            const filteredIndices = new Set(filteredRows.map(r => r._index));
+            const allSelected = filteredRows.length > 0 &&
+                                filteredRows.every(row => selectedIndices.has(row._index));
+            document.getElementById('select-all-header').checked = allSelected;
+        }
+
+        function updateSelectionCount() {
+            const count = selectedIndices.size;
+            document.getElementById('selected-count').textContent = count;
+        }
+
+        async function bulkUpdate(decision) {
+            if (selectedIndices.size === 0) {
+                alert('Please select at least one user');
+                return;
+            }
+
+            const indices = Array.from(selectedIndices);
+
+            const response = await fetch('/bulk_update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    session_id: sessionId,
+                    indices: indices,
+                    decision: decision
+                })
+            });
+
+            if (response.ok) {
+                // Update local data
+                indices.forEach(idx => {
+                    const row = allRows.find(r => r._index === idx);
+                    if (row) row._decision = decision;
+                });
+
+                // Refresh display
+                displayTable(filteredRows, Object.keys(allRows[0] || {}));
+                updateAllStats();
+
+                // Clear selection
+                deselectAll();
+            }
+        }
+
+        async function updateDecision(rowIndex, decision) {
+            const response = await fetch('/update_decision', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    session_id: sessionId,
+                    row_index: rowIndex,
+                    decision: decision
+                })
+            });
+
+            if (response.ok) {
+                // Update button styles
+                document.getElementById(`keep-${rowIndex}`).classList.toggle('keep', decision === 'keep');
+                document.getElementById(`remove-${rowIndex}`).classList.toggle('remove', decision === 'remove');
+
+                // Update local data
+                const row = allRows.find(r => r._index === rowIndex);
+                if (row) row._decision = decision;
+
+                updateAllStats();
+            }
+        }
+
+        function updateFilteredStats() {
+            const keepCount = filteredRows.filter(r => r._decision === 'keep').length;
+            const removeCount = filteredRows.filter(r => r._decision === 'remove').length;
+
+            document.getElementById('stat-filtered').textContent = filteredRows.length;
+            document.getElementById('stat-keep').textContent = keepCount;
+            document.getElementById('stat-remove').textContent = removeCount;
+        }
+
+        async function updateAllStats() {
+            const response = await fetch(`/stats/${sessionId}`);
+            const data = await response.json();
+
+            if (data.success) {
+                document.getElementById('stat-total').textContent = data.total;
+            }
+
+            updateFilteredStats();
+        }
+
+        async function exportData(type) {
+            document.getElementById('export-menu').classList.remove('show');
+
+            let exportIndices = [];
+
+            switch(type) {
+                case 'all':
+                    exportIndices = allRows.map(r => r._index);
+                    break;
+                case 'filtered':
+                    exportIndices = filteredRows.map(r => r._index);
+                    break;
+                case 'keep':
+                    exportIndices = filteredRows.filter(r => r._decision === 'keep').map(r => r._index);
+                    break;
+                case 'remove':
+                    exportIndices = filteredRows.filter(r => r._decision === 'remove').map(r => r._index);
+                    break;
+            }
+
+            if (exportIndices.length === 0) {
+                alert('No data to export with the selected filter');
+                return;
+            }
+
+            // Send export request with indices
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/export/${sessionId}`;
+
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'indices';
+            input.value = JSON.stringify(exportIndices);
+
+            form.appendChild(input);
+            document.body.appendChild(form);
+            form.submit();
+            document.body.removeChild(form);
+        }
+    </script>
+</body>
+</html>
