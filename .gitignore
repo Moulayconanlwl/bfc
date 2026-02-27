@@ -40,5 +40,3 @@ build/
 dist/
 *.egg-info/
 
-# ---- PDF or generated documents ----
-*.pdf
